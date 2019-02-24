@@ -1,10 +1,10 @@
 package message_queue_remote;
 
-import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.Queue;
 
 public class MyMessageQueue implements MessageQueue{
-	private final Queue<String> queue = new ArrayDeque<String>();
+	private final Queue<String> queue = new LinkedList<String>();
 	@Override
 	public String post(String msg) {
 		String ret = "added";
@@ -22,9 +22,9 @@ public class MyMessageQueue implements MessageQueue{
 		return ret;
 	}
 	@Override
-	public String size()
+	public int size()
 	{
-		return "" + queue.size();
+		return queue.size();
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package message_queue_remote;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -28,28 +29,14 @@ public class MQpublisher {
 				Socket socket = ss.accept(); // 等待连接
 				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 				String methodName = ois.readUTF(); // 得到请求的方法名
-				String ret = "";
-				if (methodName.equals("post"))
-				{
-					// 加入队列
-					//System.out.println("加入队列");
-					Object[] args = (Object[]) ois.readObject();
-					//System.out.println(args[0]);
-					ret = queue.post((String) args[0]);
-				}else
-				if (methodName.equals("nextMessage"))
-				{
-					// 弹出队列
-					//System.out.println("弹出队列");
-					ret = queue.nextMessage();
-				}else
-				if (methodName.equals("size"))
-				{
-					ret = queue.size();
-				}
-				//System.out.println("client: " + ret);
+				Class[] types = (Class[]) ois.readObject();
+				Object[] args = (Object[]) ois.readObject();
+				Class clazz = MyMessageQueue.class;
+				
+				Method method = clazz.getMethod(methodName, types);
+				Object ret = method.invoke(queue, args);
 				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-				oos.writeUTF(ret);
+				oos.writeObject(ret);
 				oos.flush();
 				
 				ois.close();

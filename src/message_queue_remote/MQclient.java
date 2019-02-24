@@ -16,9 +16,9 @@ public class MQclient {
 
 	public MQclient() {
 		MessageQueue queue = (MessageQueue) queueProxy();
-		//String result = queue.post("drake 2");
-		//String result1 = queue.post("drake 3");
-		// System.out.println(result);
+		String result = queue.post("drake 2");
+		String result1 = queue.post("drake 3");
+		System.out.println(result + " " + result1);
 		System.out.println(queue.size());
 		String msg = queue.nextMessage();
 		System.out.println("get: " + msg);
@@ -39,14 +39,15 @@ public class MQclient {
 								.getOutputStream());
 						String methodName = method.getName();
 						// System.out.println(methodName + " - " + args);
+						Class[] types = method.getParameterTypes();
 						oos.writeUTF(methodName);
-						if (args != null)
-							oos.writeObject(args);
+						oos.writeObject(types);
+						oos.writeObject(args);
 						
 						oos.flush();
 
 						ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-						String ret = ois.readUTF();
+						Object ret = ois.readObject();
 						// System.out.println("return: " + ret);
 						oos.close();
 						ois.close();
