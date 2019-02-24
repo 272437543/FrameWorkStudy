@@ -6,8 +6,6 @@ import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import message_queue.MyMessageQueue;
-
 public class MQpublisher {
 
 	public static void main(String[] args) {
@@ -16,11 +14,14 @@ public class MQpublisher {
 	public MQpublisher() {
 		publishQueue(9092);
 	}
-	
+	/**
+	 * 一个端口对应一个队列
+	 * @param port
+	 */
 	public void publishQueue(int port)
 	{
-		System.out.println("Publish on " + port);
 		MyMessageQueue queue = new MyMessageQueue(); // 创建一个新队列
+		System.out.println("Queue Published on " + port);
 		try
 		{
 			ServerSocket ss = new ServerSocket(port);
@@ -28,15 +29,16 @@ public class MQpublisher {
 			{
 				Socket socket = ss.accept(); // 等待连接
 				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-				String methodName = ois.readUTF(); // 得到请求的方法名
-				Class[] types = (Class[]) ois.readObject();
-				Object[] args = (Object[]) ois.readObject();
+				String methodName = ois.readUTF(); // 读取请求的方法名
+				Class[] types = (Class[]) ois.readObject(); // 读取类型
+				Object[] args = (Object[]) ois.readObject(); // 读取参数
 				Class clazz = MyMessageQueue.class;
 				
 				Method method = clazz.getMethod(methodName, types);
-				Object ret = method.invoke(queue, args);
+				Object ret = method.invoke(queue, args); // 执行方法
+				System.out.println(ret);
 				ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-				oos.writeObject(ret);
+				oos.writeObject(ret); // 写入输出流
 				oos.flush();
 				
 				ois.close();
@@ -46,7 +48,7 @@ public class MQpublisher {
 		}
 		catch(Exception e)
 		{
-			
+			e.printStackTrace();
 		}
 	}
 }

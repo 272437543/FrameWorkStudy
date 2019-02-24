@@ -7,27 +7,33 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.Socket;
 
-import message_queue.MessageQueue;
-
 public class MQclient {
 	public static void main(String[] args) {
 		new MQclient();
 	}
 
 	public MQclient() {
-		MessageQueue queue = (MessageQueue) queueProxy();
-		String result = queue.post("drake 2");
-		String result1 = queue.post("drake 3");
-		System.out.println(result + " " + result1);
-		System.out.println(queue.size());
+		MessageQueue queue = (MessageQueue) queueProxy(MessageQueue.class);
+		String result = queue.post("drake-1");
+		System.out.println(result);
+		String result1 = queue.post("drake-2");
+		System.out.println(result1);
+		System.out.println("size: " + queue.size());
 		String msg = queue.nextMessage();
 		System.out.println("get: " + msg);
+		String msg1 = queue.nextMessage();
+		System.out.println("get: " + msg1);
+		String msg2 = queue.nextMessage();
+		System.out.println("get: " + msg2);
 	}
 	static String address = "localhost";
 	static int port = 9092;
-
-	public Object queueProxy() {
-		Class<MessageQueue> clazz = MessageQueue.class;
+	/**
+	 * 
+	 * @param clazz 队列的接口
+	 * @return
+	 */
+	public Object queueProxy(Class clazz) {
 		return Proxy.newProxyInstance(clazz.getClassLoader(),
 				new Class[] { clazz }, new InvocationHandler() {
 
@@ -40,14 +46,14 @@ public class MQclient {
 						String methodName = method.getName();
 						// System.out.println(methodName + " - " + args);
 						Class[] types = method.getParameterTypes();
-						oos.writeUTF(methodName);
-						oos.writeObject(types);
-						oos.writeObject(args);
+						oos.writeUTF(methodName); // 写入方法名
+						oos.writeObject(types); // 写入参数类型
+						oos.writeObject(args); // 写入参数
 						
 						oos.flush();
 
 						ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-						Object ret = ois.readObject();
+						Object ret = ois.readObject(); // 得到响应
 						// System.out.println("return: " + ret);
 						oos.close();
 						ois.close();
